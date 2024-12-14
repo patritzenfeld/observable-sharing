@@ -80,10 +80,10 @@ share :: PRec a -> IO (IntMap (ReifyPicture Int), IntMap (ReifyPicture Int))
 share d = do
   Graph nodes s <- reifyGraph d
   let universe = IM.fromList nodes
-      refs = IM.insertWith (+) s 1 $ Prelude.foldr (mapInsertWith . toList . snd) mempty nodes
-      mrefs = IM.intersection universe $ IM.filter (>1) refs
+      refs = IM.insertWith (+) s 1 $ foldr (mapInsertWith . toList . snd) mempty nodes
+      multiRefs = IM.intersection universe $ IM.filter (>1) refs
       lut = IM.intersection universe refs
-  return (mrefs, lut)
+  pure (multiRefs, lut)
 
 
 mapInsertWith :: [Key] -> IntMap Int -> IntMap Int

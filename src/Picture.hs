@@ -23,7 +23,7 @@ data RelativePicSpec = Is RelativePicSpec Direction RelativePicSpec | PicSpec No
 
 instance Show Direction where
   show Direction{..} = case (vertical, horizontal) of
-    (Nothing, Nothing) -> "Ontop"
+    (Nothing, Nothing) -> "OnTop"
     (Nothing, Just a)  -> show a
     (Just a, Nothing)  -> show a
     (Just a, Just b)   -> show a ++ show b
@@ -327,8 +327,8 @@ westOf p1 = Is p1 (Direction  Nothing (Just West))
 eastOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 eastOf = flip westOf
 
-ontopOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
-ontopOf p1 = Is p1 (Direction Nothing Nothing)
+onTopOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
+onTopOf p1 = Is p1 (Direction Nothing Nothing)
 
 southwestOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 southwestOf p1 = Is p1 (Direction (Just South) (Just West))
@@ -383,36 +383,6 @@ relativePosition (p:ps) = others ++ relativePosition ps
     others = map (\x -> orientation x (toSpec p) $ toSpec $ stripTranslation x) ps
 
 
-{-
-relativeAlignment :: [Picture] -> RelativePicSpec
-relativeAlignment [] = toSpec blank
-relativeAlignment [p] = case p of
-  Translate _ _ q -> toSpec q
-  _               -> toSpec p
-relativeAlignment (p1:p2:ps) = case (p1,p2) of
-  (Translate x1 y1 q, Translate x2 y2 q2) ->
-    let
-      newX = middle x1 x2
-      newY = middle y1 y2
-      newP2 = Translate newX newY q2
-    in
-      orientation (samePos x1 x2) (samePos y1 y2) (toSpec q) (relativeAlignment $ newP2:ps)
-  (Translate x y q,_) ->
-    let
-      newX = middle x Zero
-      newY = middle y Zero
-      newP2 = Translate newX newY p2
-    in
-      orientation x y (toSpec q) (relativeAlignment (newP2:ps))
-  (_, Translate {}) -> relativeAlignment (p2:p1:ps)
-  (_,_) -> relativeAlignment (p2:ps) `ontopOf` toSpec p1
-  where
-    samePos a b
-      |internallyEqual a b = Zero
-      | otherwise = abs (a-b)
--}
-
-
 orientation
   :: NormalizedPicture
   -> ( RelativePicSpec
@@ -429,7 +399,7 @@ orientation (Translate a b _) = case (a,b) of
       (Neg _, Pos _) -> southeastOf
       (Neg _, Neg _) -> northeastOf
       _ -> error "This should never happen. translated smart constructor wasn't used."
-orientation _ = ontopOf
+orientation _ = onTopOf
 
 
 
