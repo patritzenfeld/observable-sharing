@@ -5,7 +5,7 @@ GHC
 Graphviz
 HUnit
 Hspec
-Bimap
+bimap
 concat
 fmap
 foldl
@@ -14,6 +14,7 @@ fst
 Github
 hspec
 https
+mempty
 println
 scanl
 snd

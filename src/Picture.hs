@@ -23,7 +23,7 @@ data RelativePicSpec = Is RelativePicSpec Direction RelativePicSpec | PicSpec No
 
 instance Show Direction where
   show Direction{..} = case (vertical, horizontal) of
-    (Nothing, Nothing) -> "Ontop"
+    (Nothing, Nothing) -> "OnTop"
     (Nothing, Just a)  -> show a
     (Just a, Nothing)  -> show a
     (Just a, Just b)   -> show a ++ show b
@@ -327,8 +327,8 @@ westOf p1 = Is p1 (Direction  Nothing (Just West))
 eastOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 eastOf = flip westOf
 
-ontopOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
-ontopOf p1 = Is p1 (Direction Nothing Nothing)
+onTopOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
+onTopOf p1 = Is p1 (Direction Nothing Nothing)
 
 southwestOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 southwestOf p1 = Is p1 (Direction (Just South) (Just West))
@@ -429,7 +429,7 @@ orientation (Translate a b _) = case (a,b) of
       (Neg _, Pos _) -> southeastOf
       (Neg _, Neg _) -> northeastOf
       _ -> error "This should never happen. translated smart constructor wasn't used."
-orientation _ = ontopOf
+orientation _ = onTopOf
 
 
 

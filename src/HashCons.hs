@@ -16,22 +16,22 @@ type NodeId = Int
 
 
 data Node
-  = NRectangle Double Double
-  | NThickRectangle Double Double Double
-  | NSolidRectangle Double Double
-  | NCircle Double
-  | NThickCircle Double Double
-  | NSolidCircle Double
-  | NLettering Text
-  | NColor Color NodeId
-  | NTranslate Double Double NodeId
-  | NScale Double Double NodeId
-  | NDilate Double NodeId
-  | NRotate Double NodeId
-  | NPictures [NodeId]
-  | NAnd NodeId NodeId
-  | NCoordinatePlane
-  | NBlank
+  = RectangleNode Double Double
+  | ThickRectangleNode Double Double Double
+  | SolidRectangleNode Double Double
+  | CircleNode Double
+  | ThickCircleNode Double Double
+  | SolidCircleNode Double
+  | LetteringNode Text
+  | ColorNode Color NodeId
+  | TranslateNode Double Double NodeId
+  | ScaleNode Double Double NodeId
+  | DilateNode Double NodeId
+  | RotateNode Double NodeId
+  | PicturesNode [NodeId]
+  | AndNode NodeId NodeId
+  | CoordinatePlaneNode
+  | BlankNode
   deriving (Eq,Ord,Show)
 
 
@@ -41,44 +41,44 @@ type BiMap a = [(NodeId,a)]
 
 
 instance Drawable Runner where
-  coordinatePlane     = Runner $ hashcons   NCoordinatePlane
-  blank               = Runner $ hashcons   NBlank
-  rectangle x         = Runner . hashcons . NRectangle x
-  thickRectangle t x  = Runner . hashcons . NThickRectangle t x
-  solidRectangle x    = Runner . hashcons . NSolidRectangle x
-  circle              = Runner . hashcons . NCircle
-  thickCircle t       = Runner . hashcons . NThickCircle t
-  solidCircle         = Runner . hashcons . NSolidCircle
-  lettering           = Runner . hashcons . NLettering
+  coordinatePlane     = Runner $ hashcons   CoordinatePlaneNode
+  blank               = Runner $ hashcons   BlankNode
+  rectangle x         = Runner . hashcons . RectangleNode x
+  thickRectangle t x  = Runner . hashcons . ThickRectangleNode t x
+  solidRectangle x    = Runner . hashcons . SolidRectangleNode x
+  circle              = Runner . hashcons . CircleNode
+  thickCircle t       = Runner . hashcons . ThickCircleNode t
+  solidCircle         = Runner . hashcons . SolidCircleNode
+  lettering           = Runner . hashcons . LetteringNode
 
   colored c p = Runner $ do
     h <- unRunner p
-    hashcons $ NColor c h
+    hashcons $ ColorNode c h
 
   translated x y p = Runner $ do
     h <- unRunner p
-    hashcons $ NTranslate x y h
+    hashcons $ TranslateNode x y h
 
   scaled x y p = Runner $ do
     h <- unRunner p
-    hashcons $ NScale x y h
+    hashcons $ ScaleNode x y h
 
   dilated d p = Runner $ do
     h <- unRunner p
-    hashcons $ NDilate d h
+    hashcons $ DilateNode d h
 
   rotated a p = Runner $ do
     h <- unRunner p
-    hashcons $ NRotate a h
+    hashcons $ RotateNode a h
 
   pictures ps = Runner $ do
     hs <- mapM unRunner ps
-    hashcons $ NPictures hs
+    hashcons $ PicturesNode hs
 
   p & q = Runner $ do
     h1 <- unRunner p
     h2 <- unRunner q
-    hashcons $ NAnd h1 h2
+    hashcons $ AndNode h1 h2
 
 
 lookupKey :: Ord a => a -> BiMap a -> Maybe NodeId
@@ -123,13 +123,13 @@ hashconsShare r = (map (\i -> (i, lookupVal i bimap)) shared, bimap)
 
 getNodes :: Node -> [NodeId]
 getNodes n = case n of
-  NColor _ i       -> [i]
-  NTranslate _ _ i -> [i]
-  NScale _ _ i     -> [i]
-  NDilate _ i      -> [i]
-  NRotate _ i      -> [i]
-  NPictures is     -> is
-  NAnd i1 i2       -> [i1,i2]
+  ColorNode _ i       -> [i]
+  TranslateNode _ _ i -> [i]
+  ScaleNode _ _ i     -> [i]
+  DilateNode _ i      -> [i]
+  RotateNode _ i      -> [i]
+  PicturesNode is     -> is
+  AndNode i1 i2       -> [i1,i2]
   _                -> []
 
 
