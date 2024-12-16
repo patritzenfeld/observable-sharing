@@ -1,16 +1,20 @@
 {-# language OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Trie (module Trie) where
 
 
 import Data.ByteString (ByteString)
 import Data.List (intersperse)
-import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS
+import Data.Text.Encoding (encodeUtf8)
 import Data.Trie (Trie)
 import qualified Data.Trie as T
 import Control.Monad.State
 import HashCons (Node(..))
 import Picture (Drawable(..))
+import Control.Monad.Identity (Identity)
+
 
 type NodeId = Int
 
@@ -22,88 +26,74 @@ data DAG = DAG {
 
 data Graph = Graph {
   unGraph :: State DAG NodeId,
-  stringAST :: ByteString
+  unStringAST :: ByteString
   }
 
 
+instance MonadFail Identity where
+  fail = error "Computation Didn't return expected amount of arguments."
+
+
+
 instance Drawable Graph where
-  rectangle x y =
-    let
-      node = RectangleNode x y
-      sAST = buildStringAST node []
-    in
-      Graph (triecons sAST $ RectangleNode x y) sAST
 
-  solidRectangle x y =
-    let
-      node = SolidRectangleNode x y
-      sAST = buildStringAST node []
-    in
-      Graph (triecons sAST $ SolidRectangleNode x y) sAST
+  blank = processSimple BlankNode
 
-  thickRectangle t x y =
-    let
-      node = ThickRectangleNode t x y
-      sAST = buildStringAST node []
-    in
-      Graph (triecons sAST $ ThickRectangleNode t x y) sAST
+  coordinatePlane = processSimple CoordinatePlaneNode
 
-  circle r =
-    let
-      node = CircleNode r
-      sAST = buildStringAST node []
-    in
-      Graph (triecons sAST $ CircleNode r) sAST
+  rectangle x = processSimple . RectangleNode x
 
-  solidCircle r =
-    let
-      node = SolidCircleNode r
-      sAST = buildStringAST node []
-    in
-      Graph (triecons sAST $ SolidCircleNode r) sAST
+  solidRectangle x = processSimple . SolidRectangleNode x
 
-  thickCircle t r =
-    let
-      node = ThickCircleNode t r
-      sAST = buildStringAST node []
-    in
-      Graph (triecons sAST $ ThickCircleNode t r) sAST
+  thickRectangle t x = processSimple . ThickRectangleNode t x
 
-  lettering t =
-    let
-      node = LetteringNode t
-      sAST = buildStringAST node []
-    in
-      Graph (triecons sAST $ LetteringNode t) sAST
+  circle = processSimple . CircleNode
 
-  translated x y p =
-    let
-      sAST = buildStringAST p "translated"
+  solidCircle = processSimple. SolidCircleNode
+
+  thickCircle t = processSimple. ThickCircleNode t
+
+  lettering = processSimple . LetteringNode
+
+  translated x y = processOneGraph $ TranslateNode x y
+
+  colored c = processOneGraph $ ColorNode c
+
+  dilated d = processOneGraph $ DilateNode d
+
+  scaled x y = processOneGraph $ ScaleNode x y
+
+  rotated a = processOneGraph $ RotateNode a
+
+  pictures ps = Graph sT sAST
+    where
+      sAST = buildStringAST (PicturesNode undefined) $ map unStringAST ps
       sT = do
-        n <- seqArgs [p]
-        case n of
-          [e] -> triecons sAST $ TranslateNode x y e
-          _ -> error "no"
-    in
-      Graph sT sAST
+        n <- seqArgs ps
+        triecons sAST $ PicturesNode n
 
-{-
-constant x = let
-node = NConstant x
-sAST = buildStringAST node []
-in Graph (triecons sAST $ NConstant x) sAST
-variable x = let
-node = NVariable x
-sAST = buildStringAST node []
-in Graph (triecons sAST $ NVariable x) sAST
-add e1 e2 = let
-sAST = buildStringAST "nadd" [e1,e2]
-sT = do ns <- seqArgs [e1,e2]
-case ns of
-[n1,n2] -> triecons sAST $ NAdd n1 n2
-_ -> error "black magic"
-in Graph sT sAST
--}
+  p & q = Graph sT sAST
+    where
+      sAST = buildStringAST (AndNode undefined undefined) $ map unStringAST [p,q]
+      sT = do
+        [e1,e2] <- seqArgs [p,q]
+        triecons sAST $ AndNode e1 e2
+
+
+processSimple :: Node -> Graph
+processSimple node = Graph (triecons sAST node) sAST
+  where
+    sAST = buildStringAST node []
+
+
+processOneGraph :: (NodeId -> Node) -> Graph -> Graph
+processOneGraph partialNode graph = Graph sT sAST
+    where
+      sAST = buildStringAST (partialNode undefined) [unStringAST graph]
+      sT = do
+        [e] <- seqArgs [graph]
+        triecons sAST $ partialNode e
+
 
 triecons :: ByteString -> Node -> State DAG NodeId
 triecons sAST node = do
@@ -131,21 +121,30 @@ seqArgs = mapM seqArg
 buildStringAST :: Node -> [ByteString] -> ByteString
 buildStringAST node args = opString <> argsString
   where
+    toBS :: Show a => a -> ByteString
+    toBS = BS.pack . show
+
     opString = case node of
-      RectangleNode _ _ -> "rectangle"
-      ThickRectangleNode t x y -> "thickRectangle"
-      SolidRectangleNode x y -> "solidRectangle"
-      CircleNode r -> "circle"
-      ThickCircleNode t r -> "thickCircle"
-      SolidCircleNode r -> "solidCircle"
-      LetteringNode t -> "lettering"
-      ColorNode c n -> "color"
-      TranslateNode x y n -> "translated"
-      ScaleNode x y n -> "scaled"
-      DilateNode d n -> "dilated"
-      RotateNode a n -> "rotated"
-      PicturesNode ns -> "pictures"
-      AndNode n1 n2 -> "(&)"
+      RectangleNode x y -> "rectangle " <> toBS x <> " " <> toBS y
+      ThickRectangleNode t x y -> "thickRectangle " <> toBS t <> " " <> toBS x <> " " <> toBS y
+      SolidRectangleNode x y -> "solidRectangle " <> toBS x <> " " <> toBS y
+      CircleNode r -> "circle " <> toBS r
+      ThickCircleNode t r -> "thickCircle " <> toBS t <> " " <> toBS r
+      SolidCircleNode r -> "solidCircle " <> toBS r
+      LetteringNode t -> "lettering " <> encodeUtf8 t
+      ColorNode c _ -> "color " <> toBS c
+      TranslateNode x y _ -> "translated " <> toBS x <> " " <> toBS y
+      ScaleNode x y _ -> "scaled " <> toBS x <> " " <> toBS y
+      DilateNode d _ -> "dilated " <> toBS d
+      RotateNode a _ -> "rotated " <> toBS a
+      PicturesNode _ -> "pictures"
+      AndNode _ _ -> "(&)"
       CoordinatePlaneNode -> "coordinatePlane"
       _ -> "blank"
-    argsString = "(" <> BS.concat (intersperse "," args) <> ")"
+    argsString = case args of
+      [] -> ""
+      _  -> " (" <> BS.concat (intersperse ") (" args) <> ")"
+
+
+buildDAG :: Graph -> (NodeId, DAG)
+buildDAG g = runState (unGraph g) (DAG T.empty 0)
