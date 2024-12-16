@@ -11,15 +11,13 @@ import Data.Text.Encoding (encodeUtf8)
 import Data.Trie (Trie)
 import qualified Data.Trie as T
 import Control.Monad.State
-import HashCons (Node(..))
+import HashCons (Node(..), NodeId, getNodes)
 import Picture (Drawable(..))
 import Control.Monad.Identity (Identity)
 
 
-type NodeId = Int
-
 data DAG = DAG {
-  unTrie :: Trie (Node,NodeId),
+  unTrie :: Trie (NodeId,Node),
   maximumId :: NodeId
 } deriving Show
 
@@ -102,10 +100,10 @@ triecons sAST node = do
     Nothing -> do
       let
         maxId' = maxId+1
-        trie' = T.insert sAST (node,maxId') trie
+        trie' = T.insert sAST (maxId',node) trie
       put $ DAG trie' maxId'
       pure maxId'
-    Just (_,nodeId) -> pure nodeId
+    Just (nodeId,_) -> pure nodeId
 
 
 seqArgs :: [Graph] -> State DAG [NodeId]
@@ -115,7 +113,7 @@ seqArgs = mapM seqArg
       DAG trie _ <- get
       case T.lookup sAST trie of
         Nothing -> sT
-        Just (_,nodeID) -> pure nodeID
+        Just (nodeID,_) -> pure nodeID
 
 
 buildStringAST :: Node -> [ByteString] -> ByteString
@@ -148,3 +146,17 @@ buildStringAST node args = opString <> argsString
 
 buildDAG :: Graph -> (NodeId, DAG)
 buildDAG g = runState (unGraph g) (DAG T.empty 0)
+
+
+--shareGraph :: Graph -> [NodeId]
+shareGraph :: Graph -> ([Node], [(NodeId, Node)])
+shareGraph g = (map shared multi, nodeIdPairs)
+  where
+    DAG trie mId = snd $ buildDAG g
+    nodeIdPairs = T.elems trie
+    nodeIds = concatMap (getNodes . snd) nodeIdPairs
+    count x = length . filter (==x)
+    multi = filter ((> 1) . flip count nodeIds) [1..mId]
+    shared x = case lookup x nodeIdPairs of
+      Just r -> r
+      _      -> error "impossible"
