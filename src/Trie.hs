@@ -148,7 +148,6 @@ buildDAG :: Graph -> (NodeId, DAG)
 buildDAG g = runState (unGraph g) (DAG T.empty 0)
 
 
---shareGraph :: Graph -> [NodeId]
 shareGraph :: Graph -> ([Node], [(NodeId, Node)])
 shareGraph g = (map shared multi, nodeIdPairs)
   where
