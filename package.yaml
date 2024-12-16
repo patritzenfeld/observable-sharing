@@ -14,6 +14,8 @@ description: Please see the README on GitHub at <https://github.com/patritzenfel
 
 dependencies:
   - base >= 4.11 && < 5
+  - bytestring
+  - bytestring-trie
   - data-reify
   - containers
   - mtl

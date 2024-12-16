@@ -26,6 +26,7 @@ library
       HashCons
       Picture
       Reify
+      Trie
   other-modules:
       Paths_observable_sharing
   autogen-modules:
@@ -35,6 +36,8 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.11 && <5
+    , bytestring
+    , bytestring-trie
     , containers
     , data-reify
     , mtl
@@ -53,6 +56,8 @@ test-suite observable-sharing-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.11 && <5
+    , bytestring
+    , bytestring-trie
     , containers
     , data-reify
     , mtl

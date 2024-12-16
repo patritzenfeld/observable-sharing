@@ -5,3 +5,4 @@ packages:
   - .
 
 extra-deps:
+  - bytestring-trie-0.2.7.5
