@@ -1,14 +1,13 @@
 {-# language DeriveTraversable #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# language AllowAmbiguousTypes #-}
+{-# language TypeFamilies #-}
 
 module Reify (module Reify) where
 
 
-import Data.Text                        (Text)
-import Data.Reify                       (Graph(..), MuRef(..), reifyGraph)
-import Data.IntMap                      (IntMap, Key)
 import Data.Foldable                    (toList)
+import Data.IntMap                      (IntMap, Key)
+import Data.Reify                       (Graph(..), MuRef(..), reifyGraph)
+import Data.Text                        (Text)
 import qualified Data.IntMap            as IM
 
 import Picture                          (Drawable(..))

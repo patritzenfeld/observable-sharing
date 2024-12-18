@@ -5,8 +5,8 @@ module HashCons (module HashCons) where
 
 
 import Control.Monad.State              (State, get, put, runState)
-import Data.Text                        (Text)
 import Data.List                        (elemIndex)
+import Data.Text                        (Text)
 
 import Picture                          (Drawable(..))
 import Types                            (Color, Font, NodeId, Point, TextStyle)

@@ -1,5 +1,5 @@
 {-# language OverloadedStrings #-}
-{-# OPTIONS_GHC -Wno-orphans #-}
+{-# options_ghc -Wno-orphans #-}
 
 module Trie (
   module Trie

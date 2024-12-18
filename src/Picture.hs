@@ -6,8 +6,8 @@ module Picture (
   ) where
 
 
-import Data.Text                        (Text)
 import Data.List                        (sort)
+import Data.Text                        (Text)
 
 import Types                            (Color(..), Point)
 
