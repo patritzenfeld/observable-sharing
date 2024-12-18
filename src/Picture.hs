@@ -13,16 +13,43 @@ import Types                            (Color(..), Point)
 
 
 
-data Thickness = Normal | Thick deriving (Show,Eq,Ord)
-data Angle = ToQuarter Double | ToHalf Double | ToThreeQuarter Double | ToFull Double deriving (Ord)
-data Moved = Neg Double | Pos Double | Zero deriving (Ord)
-newtype Size = Size Double deriving(Ord)
+newtype Size = Size Double deriving (Ord)
 
-data PlaneOrder = NormalizedPicture :> NormalizedPicture | Any deriving (Show,Eq)
+
+data Thickness
+  = Normal
+  | Thick
+  deriving (Show,Eq,Ord)
+
+
+data Angle
+  = ToQuarter Double
+  | ToHalf Double
+  | ToThreeQuarter Double
+  | ToFull Double
+  deriving (Ord)
+
+
+data Moved
+  = Neg Double
+  | Pos Double
+  | Zero
+  deriving (Ord)
+
+
 data DirectionV = South deriving (Eq,Ord,Show)
 data DirectionH = West | East deriving (Eq,Ord,Show)
-data Direction = Direction {vertical :: Maybe DirectionV, horizontal :: Maybe DirectionH} deriving (Eq,Ord)
-data RelativePicSpec = Is RelativePicSpec Direction RelativePicSpec | PicSpec NormalizedPicture deriving(Eq,Ord)
+
+data Direction = Direction {
+  vertical :: Maybe DirectionV,
+  horizontal :: Maybe DirectionH
+} deriving (Eq,Ord)
+
+
+data RelativePicSpec
+  = Is RelativePicSpec Direction RelativePicSpec
+  | PicSpec NormalizedPicture
+  deriving(Eq,Ord)
 
 
 instance Show Direction where
@@ -40,8 +67,6 @@ instance Show RelativePicSpec where
 
 (===) :: NormalizedPicture -> NormalizedPicture -> Bool
 p1 === p2 = toRelative p1 == toRelative p2
-
-
 
 
 instance Show Size where
@@ -105,14 +130,12 @@ halve (Pos a) = Pos $ a/2
 halve (Neg a) = Neg $ a/2
 
 
-
 instance Eq Angle where
   (ToQuarter _)      == (ToQuarter _)      = True
   (ToHalf _)         == (ToHalf _)         = True
   (ToThreeQuarter _) == (ToThreeQuarter _) = True
   (ToFull _)         == (ToFull _)         = True
   _                  == _                  = False
-
 
 
 instance Show Angle where
@@ -141,7 +164,6 @@ class Drawable a where
   blank :: a
 
 
-
 data NormalizedPicture
   = Rectangle !Thickness !Size !Size
   | SolidRectangle !Size !Size
@@ -168,12 +190,10 @@ data NormalizedPicture
   deriving (Show,Eq,Ord)
 
 
-
 thickness :: (Eq a, Fractional a) => a -> Thickness
 thickness d
   | d /= 0 = Thick
   | otherwise = Normal
-
 
 
 instance Drawable NormalizedPicture where
@@ -243,7 +263,10 @@ instance Drawable NormalizedPicture where
   scaled 1 1 p = p
   scaled fac1 fac2 p = case p of
     Scale f1 f2 q    -> scaled (f1*abs fac1) (f2* abs fac2) q
-    Translate x y q  -> Translate (toPosition $ getExactPos x*fac1) (toPosition $ getExactPos y*fac2) $ scaled fac1 fac2 q
+    Translate x y q  -> Translate
+                         (toPosition $ getExactPos x*fac1)
+                         (toPosition $ getExactPos y*fac2)
+                         $ scaled fac1 fac2 q
     Blank            -> Blank
     Pictures ps      -> Pictures $ map (scaled fac1 fac2) ps
     a                -> Scale (abs fac1) (abs fac2) a
@@ -251,7 +274,10 @@ instance Drawable NormalizedPicture where
   rotated 0 p = p
   rotated a p = case p of
     Rotate a2 q     -> rotated (a + getExactAngle a2) q
-    Translate x y q -> Translate (toPosition $ getExactPos x*cos a - getExactPos y*sin a) (toPosition $ getExactPos x*sin a + getExactPos y*cos a) $ rotated a q
+    Translate x y q -> Translate
+                        (toPosition $ getExactPos x*cos a - getExactPos y*sin a)
+                        (toPosition $ getExactPos x*sin a + getExactPos y*cos a)
+                        $ rotated a q
     Pictures ps     -> Pictures $ map (rotated a) ps
     q               -> Rotate (toAngle a) q
 
@@ -311,34 +337,37 @@ internallyEqual Zero Zero = True
 internallyEqual _ _ = False
 
 
-
-toSpec :: NormalizedPicture -> RelativePicSpec
-toSpec = PicSpec
-
-
 southOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 southOf p1 = Is p1 (Direction (Just South) Nothing)
+
 
 northOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 northOf = flip southOf
 
+
 westOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 westOf p1 = Is p1 (Direction  Nothing (Just West))
+
 
 eastOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 eastOf = flip westOf
 
+
 onTopOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 onTopOf p1 = Is p1 (Direction Nothing Nothing)
+
 
 southwestOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 southwestOf p1 = Is p1 (Direction (Just South) (Just West))
 
+
 southeastOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 southeastOf p1 = Is p1 (Direction (Just South) (Just East))
 
+
 northwestOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 northwestOf = flip southeastOf
+
 
 northeastOf :: RelativePicSpec -> RelativePicSpec -> RelativePicSpec
 northeastOf = flip southwestOf
@@ -363,8 +392,7 @@ red = Red
 toRelative :: NormalizedPicture -> [RelativePicSpec]
 toRelative p = case p of
   Pictures ps -> sort $ relativePosition ps
-  a           -> [toSpec a]
-
+  a           -> [PicSpec a]
 
 
 stripTranslation :: NormalizedPicture -> NormalizedPicture
@@ -376,12 +404,16 @@ relativePosition :: [NormalizedPicture] -> [RelativePicSpec]
 relativePosition [] = []
 relativePosition (Translate x y p:ps) = othersTrans ++ relativePosition ps
   where
-    asCenter (Translate a b pic) = translated (getExactPos $ a-x) (getExactPos $ b-y) pic
+    asCenter (Translate a b pic) =
+      translated (getExactPos $ a-x) (getExactPos $ b-y) pic
     asCenter pic = translated (getExactPos $ -x) (getExactPos $ -y) pic
-    othersTrans = map (\pic -> orientation (asCenter pic) (toSpec p) $ toSpec $ stripTranslation pic) ps
+    othersTrans = map (\pic ->
+        orientation (asCenter pic) (PicSpec p) $ PicSpec $ stripTranslation pic
+        )
+      ps
 relativePosition (p:ps) = others ++ relativePosition ps
   where
-    others = map (\x -> orientation x (toSpec p) $ toSpec $ stripTranslation x) ps
+    others = map (\x -> orientation x (PicSpec p) $ PicSpec $ stripTranslation x) ps
 
 
 orientation
@@ -391,51 +423,56 @@ orientation
     -> RelativePicSpec
      )
 orientation (Translate a b _) = case (a,b) of
-      (Zero, Neg _) -> northOf
-      (Zero, Pos _) -> southOf
-      (Neg _, Zero) -> eastOf
-      (Pos _, Zero) -> westOf
+      (Zero, Neg _)   -> northOf
+      (Zero, Pos _)   -> southOf
+      (Neg _, Zero)   -> eastOf
+      (Pos _, Zero)   -> westOf
       (Pos _,  Pos _) -> southwestOf
-      (Pos _, Neg _) -> northwestOf
-      (Neg _, Pos _) -> southeastOf
-      (Neg _, Neg _) -> northeastOf
-      _ -> error "This should never happen. translated smart constructor wasn't used."
+      (Pos _, Neg _)  -> northwestOf
+      (Neg _, Pos _)  -> southeastOf
+      (Neg _, Neg _)  -> northeastOf
+      _               -> error $
+                           "This should never happen. " ++
+                           "translated smart constructor wasn't used."
 orientation _ = onTopOf
 
 
-
 sampleSolution :: Drawable a => a
-sampleSolution = translated 0 6 (colored yellow (solidCircle 1)) & colored green (solidRectangle 20 2)
+sampleSolution = translated 0 6 (colored yellow (solidCircle 1))
+               & colored green (solidRectangle 20 2)
 
 
 example1 :: Drawable a => a
-example1 = colored yellow (solidCircle 2) & translated 0 (-5) (colored green (solidRectangle 12 3))
+example1 = colored yellow (solidCircle 2)
+         & translated 0 (-5) (colored green (solidRectangle 12 3))
+
 
 example2 :: Drawable a => a
-example2 = translated 0 6 (colored yellow(solidCircle 1)) &
-           colored green (solidRectangle 12 2)
+example2 = translated 0 6 (colored yellow(solidCircle 1))
+         & colored green (solidRectangle 12 2)
 
 
 example3 :: Drawable a => a
 example3 = grass & sun
-  where grass = colored green (solidRectangle 20 2)
-        sun = translated 0 7 (colored yellow (solidCircle 1.5))
+  where
+    grass = colored green (solidRectangle 20 2)
+    sun = translated 0 7 (colored yellow (solidCircle 1.5))
 
 
 example4 :: Drawable a => a
 example4 = ebene & translated 0 9 sonne
-  where boden = solidRectangle 20 2
-        ebene = colored green boden
-        sonne = colored yellow (solidCircle 1)
+  where
+    boden = solidRectangle 20 2
+    ebene = colored green boden
+    sonne = colored yellow (solidCircle 1)
 
 
 example5 :: Drawable a => a
-example5 = colored yellow (solidCircle 1) &
-           translated 0 (-3) (colored green (solidRectangle 8 1.5))
+example5 = colored yellow (solidCircle 1)
+         & translated 0 (-3) (colored green (solidRectangle 8 1.5))
 
 
 threeCircles :: Drawable a => a
-threeCircles =
-  colored red (solidCircle 1) &
-  translated 2 4 (colored green $ solidCircle 1) &
-  translated 0 3 (colored yellow $ solidCircle 1)
+threeCircles = colored red (solidCircle 1)
+             & translated 2 4 (colored green $ solidCircle 1)
+             & translated 0 3 (colored yellow $ solidCircle 1)
