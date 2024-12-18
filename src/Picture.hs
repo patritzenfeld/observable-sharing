@@ -1,12 +1,16 @@
 {-# language RecordWildCards #-}
 {-# language OverloadedStrings #-}
 
-module Picture (module Picture) where
+module Picture (
+  module Picture
+  ) where
 
 
-import Data.Text (Text)
-import Data.List (sort)
-import Types (Color(..), Point)
+import Data.Text                        (Text)
+import Data.List                        (sort)
+
+import Types                            (Color(..), Point)
+
 
 
 data Thickness = Normal | Thick deriving (Show,Eq,Ord)

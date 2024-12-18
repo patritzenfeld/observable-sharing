@@ -1,20 +1,24 @@
 {-# language OverloadedStrings #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Trie (module Trie) where
+module Trie (
+  module Trie
+  ) where
 
 
-import Data.ByteString (ByteString)
-import Data.List (intersperse)
-import qualified Data.ByteString.Char8 as BS
-import Data.Text.Encoding (encodeUtf8)
-import Data.Trie (Trie)
-import qualified Data.Trie as T
-import Control.Monad.State (State, get, put, runState)
-import HashCons (Node(..), getNodes)
-import Picture (Drawable(..))
-import Types (NodeId)
-import Control.Monad.Identity (Identity)
+import Control.Monad.Identity           (Identity)
+import Control.Monad.State              (State, get, put, runState)
+import Data.ByteString                  (ByteString)
+import Data.List                        (intersperse)
+import Data.Text.Encoding               (encodeUtf8)
+import Data.Trie                        (Trie)
+import qualified Data.ByteString.Char8  as BS
+import qualified Data.Trie              as T
+
+import HashCons                         (Node(..), getNodes)
+import Picture                          (Drawable(..))
+import Types                            (NodeId)
+
 
 
 data DAG = DAG {

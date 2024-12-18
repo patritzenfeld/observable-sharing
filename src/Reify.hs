@@ -4,13 +4,16 @@
 
 module Reify (module Reify) where
 
-import Data.Text (Text)
-import Picture (Drawable(..))
-import Data.Reify
-import qualified Data.IntMap as IM
-import Data.IntMap (Key,IntMap)
-import Data.Foldable (toList)
-import Types (Font, TextStyle, Point, Color)
+
+import Data.Text                        (Text)
+import Data.Reify                       (Graph(..), MuRef(..), reifyGraph)
+import Data.IntMap                      (IntMap, Key)
+import Data.Foldable                    (toList)
+import qualified Data.IntMap            as IM
+
+import Picture                          (Drawable(..))
+import Types                            (Font, TextStyle, Point, Color)
+
 
 
 data ReifyPicture a
