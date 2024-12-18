@@ -8,11 +8,9 @@ import Control.Monad.State
 import Data.Text (Text)
 import Data.List (elemIndex)
 
-import Picture
+import Picture (Drawable(..))
+import Types (Color, Font, NodeId, Point, TextStyle)
 
-
-
-type NodeId = Int
 
 
 data Node
@@ -22,12 +20,27 @@ data Node
   | CircleNode Double
   | ThickCircleNode Double Double
   | SolidCircleNode Double
+  | PolygonNode [Point]
+  | SolidPolygonNode [Point]
+  | ThickPolygonNode [Point] Double
+  | ClosedCurveNode [Point]
+  | SolidClosedCurveNode [Point]
+  | ThickClosedCurveNode [Point] Double
+  | PolylineNode [Point]
+  | ThickPolylineNode [Point] Double
+  | CurveNode [Point] Double
+  | SectorNode Double Double Double
+  | ArcNode Double Double Double
+  | ThickArcNode Double Double Double Double
   | LetteringNode Text
+  | StyledLetteringNode TextStyle Font Text
   | ColorNode Color NodeId
   | TranslateNode Double Double NodeId
   | ScaleNode Double Double NodeId
   | DilateNode Double NodeId
   | RotateNode Double NodeId
+  | ReflectNode Double NodeId
+  | ClipNode Double Double NodeId
   | PicturesNode [NodeId]
   | AndNode NodeId NodeId
   | CoordinatePlaneNode
@@ -128,9 +141,11 @@ getNodes n = case n of
   ScaleNode _ _ i     -> [i]
   DilateNode _ i      -> [i]
   RotateNode _ i      -> [i]
+  ReflectNode _ i     -> [i]
+  ClipNode _ _ i      -> [i]
   PicturesNode is     -> is
   AndNode i1 i2       -> [i1,i2]
-  _                -> []
+  _                   -> []
 
 
 test1 :: Drawable a => a

@@ -6,12 +6,12 @@ module Picture (module Picture) where
 
 import Data.Text (Text)
 import Data.List (sort)
+import Types (Color(..), Point)
 
 
 data Thickness = Normal | Thick deriving (Show,Eq,Ord)
 data Angle = ToQuarter Double | ToHalf Double | ToThreeQuarter Double | ToFull Double deriving (Ord)
 data Moved = Neg Double | Pos Double | Zero deriving (Ord)
-data Color = Yellow | Green | Red deriving (Eq,Show,Ord)
 newtype Size = Size Double deriving(Ord)
 
 data PlaneOrder = NormalizedPicture :> NormalizedPicture | Any deriving (Show,Eq)
@@ -151,7 +151,6 @@ data NormalizedPicture
   | Pictures [NormalizedPicture]
   | CoordinatePlane
   | Blank
-  {-
   | SolidPolygon [Point]
   | Polygon [Point] !Thickness
   | SolidClosedCurve [Point]
@@ -160,10 +159,8 @@ data NormalizedPicture
   | Curve [Point] !Thickness
   | Sector !Angle !Angle !Size
   | Arc !Thickness !Angle !Angle !Size
-  | Reflect !Angle !Picture
-  | Clip !Double !Double !Picture
-  | Sketch !Text !Text !Double !Double
--}
+  | Reflect !Angle !NormalizedPicture
+  | Clip !Size !Size !NormalizedPicture
   deriving (Show,Eq,Ord)
 
 

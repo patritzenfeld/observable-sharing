@@ -10,9 +10,10 @@ import qualified Data.ByteString.Char8 as BS
 import Data.Text.Encoding (encodeUtf8)
 import Data.Trie (Trie)
 import qualified Data.Trie as T
-import Control.Monad.State
-import HashCons (Node(..), NodeId, getNodes)
+import Control.Monad.State (State, get, put, runState)
+import HashCons (Node(..), getNodes)
 import Picture (Drawable(..))
+import Types (NodeId)
 import Control.Monad.Identity (Identity)
 
 

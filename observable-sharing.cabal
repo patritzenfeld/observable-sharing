@@ -27,6 +27,7 @@ library
       Picture
       Reify
       Trie
+      Types
   other-modules:
       Paths_observable_sharing
   autogen-modules:
