@@ -9,6 +9,7 @@ module Picture (
 import Data.List                        (sort)
 import Data.Text                        (Text)
 
+import API                              (Drawable(..))
 import Types                            (Color(..), Point)
 
 
@@ -143,25 +144,6 @@ instance Show Angle where
   show (ToHalf _) = "QuarterToHalf"
   show (ToThreeQuarter _) = "HalfToThreeQuarter"
   show (ToFull _) = "ThreeQuarterToFull"
-
-
-class Drawable a where
-  rectangle :: Double -> Double -> a
-  solidRectangle :: Double -> Double -> a
-  thickRectangle :: Double -> Double -> Double -> a
-  circle :: Double -> a
-  solidCircle :: Double -> a
-  lettering :: Text -> a
-  thickCircle :: Double -> Double -> a
-  translated :: Double -> Double -> a -> a
-  colored :: Color -> a -> a
-  dilated :: Double -> a -> a
-  scaled :: Double -> Double -> a -> a
-  rotated :: Double -> a -> a
-  pictures :: [a] -> a
-  (&) :: a -> a -> a
-  coordinatePlane :: a
-  blank :: a
 
 
 data NormalizedPicture

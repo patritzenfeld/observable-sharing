@@ -10,7 +10,7 @@ import Data.Reify                       (Graph(..), MuRef(..), reifyGraph)
 import Data.Text                        (Text)
 import qualified Data.IntMap            as IM
 
-import Picture                          (Drawable(..))
+import API                              (Drawable(..))
 import Types                            (Font, TextStyle, Point, Color)
 
 

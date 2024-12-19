@@ -8,7 +8,7 @@ import Control.Monad.State              (State, get, put, runState)
 import Data.List                        (elemIndex)
 import Data.Text                        (Text)
 
-import Picture                          (Drawable(..))
+import API                              (Drawable(..))
 import Types                            (Color, Font, NodeId, Point, TextStyle)
 
 

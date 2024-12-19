@@ -15,8 +15,8 @@ import Data.Trie                        (Trie)
 import qualified Data.ByteString.Char8  as BS
 import qualified Data.Trie              as T
 
+import API                              (Drawable(..))
 import HashCons                         (Node(..), getNodes)
-import Picture                          (Drawable(..))
 import Types                            (NodeId)
 
 
