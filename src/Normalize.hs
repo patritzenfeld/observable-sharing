@@ -235,7 +235,7 @@ instance Drawable NormalizedPicture where
     | a1 == a2  = blank
     | a1 > a2 = sector a2 a1 r
     | abs (a1 - a2) >= 2*pi = solidCircle r
-    | otherwise = Arc (Hollow Normal) (toAngle a1) (toAngle a2) (toSize r)
+    | otherwise = Arc Solid (toAngle a1) (toAngle a2) (toSize r)
 
   thickArc _ _ _ 0 = blank
   thickArc t a1 a2 r
