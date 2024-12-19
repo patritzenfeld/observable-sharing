@@ -1,8 +1,8 @@
 {-# language RecordWildCards #-}
 {-# language OverloadedStrings #-}
 
-module Picture (
-  module Picture
+module Normalize (
+  module Normalize
   ) where
 
 
