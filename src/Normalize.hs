@@ -23,6 +23,12 @@ data Thickness
   deriving (Show,Eq,Ord)
 
 
+data ShapeKind
+  = Hollow Thickness
+  | Solid
+  deriving (Eq,Ord,Show)
+
+
 data Angle
   = ToQuarter Double
   | ToHalf Double
@@ -147,10 +153,8 @@ instance Show Angle where
 
 
 data NormalizedPicture
-  = Rectangle !Thickness !Size !Size
-  | SolidRectangle !Size !Size
-  | Circle !Thickness !Size
-  | SolidCircle !Size
+  = Rectangle !ShapeKind !Size !Size
+  | Circle !ShapeKind !Size
   | Lettering !Text
   | Color !Color !NormalizedPicture
   | Translate !Moved !Moved !NormalizedPicture
@@ -165,8 +169,7 @@ data NormalizedPicture
   | ClosedCurve [Point] !Thickness
   | Polyline [Point] !Thickness
   | Curve [Point] !Thickness
-  | Sector !Angle !Angle !Size
-  | Arc !Thickness !Angle !Angle !Size
+  | Arc !ShapeKind !Angle !Angle !Size
   | Reflect !Angle !NormalizedPicture
   | Clip !Size !Size !NormalizedPicture
   deriving (Show,Eq,Ord)
@@ -200,28 +203,52 @@ instance Drawable NormalizedPicture where
   coordinatePlane = CoordinatePlane
 
   circle 0 = blank
-  circle r = Circle Normal $ toSize r
+  circle r = Circle (Hollow Normal) $ toSize r
 
   solidCircle 0 = blank
-  solidCircle r = SolidCircle $ toSize r
+  solidCircle r = Circle Solid $ toSize r
 
   thickCircle 0 _ = blank
-  thickCircle t r = Circle (thickness t) $ toSize r
+  thickCircle t r = Circle (Hollow $ thickness t) $ toSize r
 
   rectangle 0 _ = blank
   rectangle _ 0 = blank
-  rectangle l w  = Rectangle Normal (toSize l) $ toSize w
+  rectangle l w  = Rectangle (Hollow Normal) (toSize l) $ toSize w
 
   solidRectangle 0 _ = blank
   solidRectangle _ 0 = blank
-  solidRectangle l w = SolidRectangle (toSize l) $ toSize w
+  solidRectangle l w = Rectangle Solid (toSize l) $ toSize w
 
   thickRectangle _ 0 _ = blank
   thickRectangle _ _ 0 = blank
-  thickRectangle t l w = Rectangle (thickness t) (toSize l) $ toSize w
+  thickRectangle t l w = Rectangle (Hollow $ thickness t) (toSize l) $ toSize w
+
+  arc _ _ 0 = blank
+  arc a1 a2 r
+    | a1 == a2  = blank
+    | a1 > a2 = arc a2 a1 r
+    | abs (a1 - a2) >= 2*pi = circle r
+    | otherwise = Arc (Hollow Normal) (toAngle a1) (toAngle a2) (toSize r)
+
+  sector _ _ 0 = blank
+  sector a1 a2 r
+    | a1 == a2  = blank
+    | a1 > a2 = sector a2 a1 r
+    | abs (a1 - a2) >= 2*pi = solidCircle r
+    | otherwise = Arc (Hollow Normal) (toAngle a1) (toAngle a2) (toSize r)
+
+  thickArc _ _ _ 0 = blank
+  thickArc t a1 a2 r
+    | a1 == a2  = blank
+    | a1 > a2 = thickArc t a2 a1 r
+    | abs (a1 - a2) >= 2*pi = thickCircle t r
+    | otherwise = Arc (Hollow $ thickness t) (toAngle a1) (toAngle a2) (toSize r)
 
   lettering "" = blank
   lettering t  = Lettering t
+
+  styledLettering _ _ "" = blank
+  styledLettering _ _ t = Lettering t
 
   translated 0 0 p = p
   translated x y p = case p of

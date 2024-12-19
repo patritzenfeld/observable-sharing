@@ -54,35 +54,29 @@ type BiMap a = [(NodeId,a)]
 
 
 instance Drawable Runner where
-  coordinatePlane     = Runner $ hashcons   CoordinatePlaneNode
-  blank               = Runner $ hashcons   BlankNode
-  rectangle x         = Runner . hashcons . RectangleNode x
-  thickRectangle t x  = Runner . hashcons . ThickRectangleNode t x
-  solidRectangle x    = Runner . hashcons . SolidRectangleNode x
-  circle              = Runner . hashcons . CircleNode
-  thickCircle t       = Runner . hashcons . ThickCircleNode t
-  solidCircle         = Runner . hashcons . SolidCircleNode
-  lettering           = Runner . hashcons . LetteringNode
+  coordinatePlane      = toRunnerSimple CoordinatePlaneNode
+  blank                = toRunnerSimple BlankNode
+  rectangle x          = toRunnerSimple . RectangleNode x
+  thickRectangle t x   = toRunnerSimple . ThickRectangleNode t x
+  solidRectangle x     = toRunnerSimple . SolidRectangleNode x
+  circle               = toRunnerSimple . CircleNode
+  thickCircle t        = toRunnerSimple . ThickCircleNode t
+  solidCircle          = toRunnerSimple . SolidCircleNode
+  arc a1 a2            = toRunnerSimple . ArcNode a1 a2
+  sector a1 a2         = toRunnerSimple . SectorNode a1 a2
+  thickArc t a1 a2     = toRunnerSimple . ThickArcNode t a1 a2
+  lettering            = toRunnerSimple . LetteringNode
+  styledLettering ts f = toRunnerSimple . StyledLetteringNode ts f
 
-  colored c p = Runner $ do
-    h <- unRunner p
-    hashcons $ ColorNode c h
+  colored c = toRunnerSingle $ ColorNode c
 
-  translated x y p = Runner $ do
-    h <- unRunner p
-    hashcons $ TranslateNode x y h
+  translated x y = toRunnerSingle $ TranslateNode x y
 
-  scaled x y p = Runner $ do
-    h <- unRunner p
-    hashcons $ ScaleNode x y h
+  scaled x y = toRunnerSingle $ ScaleNode x y
 
-  dilated d p = Runner $ do
-    h <- unRunner p
-    hashcons $ DilateNode d h
+  dilated d = toRunnerSingle $ DilateNode d
 
-  rotated a p = Runner $ do
-    h <- unRunner p
-    hashcons $ RotateNode a h
+  rotated a = toRunnerSingle $ RotateNode a
 
   pictures ps = Runner $ do
     hs <- mapM unRunner ps
@@ -92,6 +86,16 @@ instance Drawable Runner where
     h1 <- unRunner p
     h2 <- unRunner q
     hashcons $ AndNode h1 h2
+
+
+toRunnerSimple :: Node -> Runner
+toRunnerSimple = Runner . hashcons
+
+
+toRunnerSingle :: (NodeId -> Node) -> Runner -> Runner
+toRunnerSingle f x = Runner $ do
+    hs <- unRunner x
+    hashcons $ f hs
 
 
 lookupKey :: Ord a => a -> BiMap a -> Maybe NodeId

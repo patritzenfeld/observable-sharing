@@ -54,22 +54,26 @@ newtype PRec a = PRec (ReifyPicture (PRec a))
 
 
 instance Drawable (PRec a) where
-  rectangle x        = PRec . Rectangle x
-  thickRectangle t x = PRec . ThickRectangle t x
-  solidRectangle x   = PRec . SolidRectangle x
-  circle             = PRec . Circle
-  thickCircle t      = PRec . ThickCircle t
-  solidCircle        = PRec . SolidCircle
-  lettering          = PRec . Lettering
-  colored c          = PRec . Color c
-  translated x y     = PRec . Translate x y
-  scaled x y         = PRec . Scale x y
-  dilated a          = PRec . Dilate a
-  rotated a          = PRec . Rotate a
-  pictures           = PRec . Pictures
-  a & b              = PRec $ And a b
-  coordinatePlane    = PRec CoordinatePlane
-  blank              = PRec Blank
+  rectangle x          = PRec . Rectangle x
+  thickRectangle t x   = PRec . ThickRectangle t x
+  solidRectangle x     = PRec . SolidRectangle x
+  circle               = PRec . Circle
+  thickCircle t        = PRec . ThickCircle t
+  solidCircle          = PRec . SolidCircle
+  arc a1 a2            = PRec . Arc a1 a2
+  sector a1 a2         = PRec . Sector a1 a2
+  thickArc t a1 a2     = PRec . ThickArc t a1 a2
+  lettering            = PRec . Lettering
+  styledLettering ts f = PRec . StyledLettering ts f
+  colored c            = PRec . Color c
+  translated x y       = PRec . Translate x y
+  scaled x y           = PRec . Scale x y
+  dilated a            = PRec . Dilate a
+  rotated a            = PRec . Rotate a
+  pictures             = PRec . Pictures
+  a & b                = PRec $ And a b
+  coordinatePlane      = PRec CoordinatePlane
+  blank                = PRec Blank
 
 
 instance MuRef (PRec a) where
