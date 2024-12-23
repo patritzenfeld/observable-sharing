@@ -25,10 +25,11 @@ data Node
   | ThickPolygonNode [Point] Double
   | ClosedCurveNode [Point]
   | SolidClosedCurveNode [Point]
-  | ThickClosedCurveNode [Point] Double
+  | ThickClosedCurveNode Double [Point]
   | PolylineNode [Point]
   | ThickPolylineNode [Point] Double
-  | CurveNode [Point] Double
+  | CurveNode [Point]
+  | ThickCurveNode Double [Point]
   | SectorNode Double Double Double
   | ArcNode Double Double Double
   | ThickArcNode Double Double Double Double
@@ -65,18 +66,19 @@ instance Drawable Runner where
   arc a1 a2            = toRunnerSimple . ArcNode a1 a2
   sector a1 a2         = toRunnerSimple . SectorNode a1 a2
   thickArc t a1 a2     = toRunnerSimple . ThickArcNode t a1 a2
+  curve                = toRunnerSimple . CurveNode
+  thickCurve t         = toRunnerSimple . ThickCurveNode t
+  closedCurve          = toRunnerSimple . ClosedCurveNode
+  thickClosedCurve t   = toRunnerSimple . ThickClosedCurveNode t
+  solidClosedCurve     = toRunnerSimple . SolidClosedCurveNode
   lettering            = toRunnerSimple . LetteringNode
   styledLettering ts f = toRunnerSimple . StyledLetteringNode ts f
 
-  colored c = toRunnerSingle $ ColorNode c
-
+  colored c      = toRunnerSingle $ ColorNode c
   translated x y = toRunnerSingle $ TranslateNode x y
-
-  scaled x y = toRunnerSingle $ ScaleNode x y
-
-  dilated d = toRunnerSingle $ DilateNode d
-
-  rotated a = toRunnerSingle $ RotateNode a
+  scaled x y     = toRunnerSingle $ ScaleNode x y
+  dilated d      = toRunnerSingle $ DilateNode d
+  rotated a      = toRunnerSingle $ RotateNode a
 
   pictures ps = Runner $ do
     hs <- mapM unRunner ps

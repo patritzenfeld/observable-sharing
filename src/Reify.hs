@@ -25,15 +25,16 @@ data ReifyPicture a
   | Polygon [Point]
   | SolidPolygon [Point]
   | ThickPolygon [Point] Double
-  | ClosedCurve [Point]
-  | SolidClosedCurve [Point]
-  | ThickClosedCurve [Point] Double
   | Polyline [Point]
   | ThickPolyline [Point] Double
-  | Curve [Point] Double
   | Sector Double Double Double
   | Arc Double Double Double
   | ThickArc Double Double Double Double
+  | Curve [Point]
+  | ThickCurve Double [Point]
+  | ClosedCurve [Point]
+  | SolidClosedCurve [Point]
+  | ThickClosedCurve Double [Point]
   | Lettering Text
   | StyledLettering TextStyle Font Text
   | Color Color a
@@ -63,6 +64,11 @@ instance Drawable (PRec a) where
   arc a1 a2            = PRec . Arc a1 a2
   sector a1 a2         = PRec . Sector a1 a2
   thickArc t a1 a2     = PRec . ThickArc t a1 a2
+  curve                = PRec . Curve
+  thickCurve t         = PRec . ThickCurve t
+  closedCurve          = PRec . ClosedCurve
+  thickClosedCurve t   = PRec . ThickClosedCurve t
+  solidClosedCurve     = PRec . SolidClosedCurve
   lettering            = PRec . Lettering
   styledLettering ts f = PRec . StyledLettering ts f
   colored c            = PRec . Color c
@@ -96,15 +102,16 @@ instance MuRef (PRec a) where
     SolidCircle r         -> pure $ SolidCircle r
     Lettering t           -> pure $ Lettering t
     StyledLettering s w t -> pure $ StyledLettering s w t
-    Polygon xs            -> pure $ Polygon xs
-    SolidPolygon xs       -> pure $ SolidPolygon xs
-    ThickPolygon xs t     -> pure $ ThickPolygon xs t
+    Curve xs              -> pure $ Curve xs
+    ThickCurve t xs       -> pure $ ThickCurve t xs
     ClosedCurve xs        -> pure $ ClosedCurve xs
     SolidClosedCurve xs   -> pure $ SolidClosedCurve xs
     ThickClosedCurve xs t -> pure $ ThickClosedCurve xs t
+    Polygon xs            -> pure $ Polygon xs
+    SolidPolygon xs       -> pure $ SolidPolygon xs
+    ThickPolygon xs t     -> pure $ ThickPolygon xs t
     Polyline xs           -> pure $ Polyline xs
     ThickPolyline xs t    -> pure $ ThickPolyline xs t
-    Curve xs a            -> pure $ Curve xs a
     Sector a1 a2 r        -> pure $ Sector a1 a2 r
     Arc a1 a2 r           -> pure $ Arc a1 a2 r
     ThickArc t a1 a2 r    -> pure $ ThickArc t a1 a2 r

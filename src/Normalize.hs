@@ -6,12 +6,12 @@ module Normalize (
   ) where
 
 
+import Data.Containers.ListUtils        (nubOrd)
 import Data.List                        (sort)
 import Data.Text                        (Text)
 
 import API                              (Drawable(..))
 import Types                            (Color(..), Point)
-
 
 
 newtype Size = Size Double deriving (Ord)
@@ -57,6 +57,8 @@ data RelativePicSpec
   = Is RelativePicSpec Direction RelativePicSpec
   | PicSpec NormalizedPicture
   deriving(Eq,Ord)
+
+type AbsPoint = (Moved,Moved)
 
 
 instance Show Direction where
@@ -163,12 +165,10 @@ data NormalizedPicture
   | Pictures [NormalizedPicture]
   | CoordinatePlane
   | Blank
-  | SolidPolygon [Point]
-  | Polygon [Point] !Thickness
-  | SolidClosedCurve [Point]
-  | ClosedCurve [Point] !Thickness
-  | Polyline [Point] !Thickness
-  | Curve [Point] !Thickness
+  | Polygon !ShapeKind [AbsPoint]
+  | ClosedCurve !ShapeKind [AbsPoint]
+  | Polyline [AbsPoint] !Thickness
+  | Curve !ShapeKind [AbsPoint]
   | Arc !ShapeKind !Angle !Angle !Size
   | Reflect !Angle !NormalizedPicture
   | Clip !Size !Size !NormalizedPicture
@@ -244,6 +244,16 @@ instance Drawable NormalizedPicture where
     | abs (a1 - a2) >= 2*pi = thickCircle t r
     | otherwise = Arc (Hollow $ thickness t) (toAngle a1) (toAngle a2) (toSize r)
 
+  curve = handlePointList $ Curve $ Hollow Normal
+
+  thickCurve t = handlePointList $ Curve $ Hollow $ thickness t
+
+  closedCurve = handlePointList $ ClosedCurve $ Hollow Normal
+
+  solidClosedCurve = handlePointList $ ClosedCurve Solid
+
+  thickClosedCurve t = handlePointList $ ClosedCurve $ Hollow $ thickness t
+
   lettering "" = blank
   lettering t  = Lettering t
 
@@ -291,6 +301,16 @@ instance Drawable NormalizedPicture where
     q               -> Rotate (toAngle a) q
 
 
+
+
+handlePointList :: Drawable a => ([AbsPoint] -> a) -> [Point] -> a
+handlePointList f ps
+    | length reduced < 2 = blank
+    | otherwise = f $ map toAbstractPoint reduced
+  where
+    reduced = sort $ nubOrd ps
+
+
 modTwoPi :: Double -> Double
 modTwoPi d
   | d == 0 || d == 2*pi = 0
@@ -331,6 +351,9 @@ toPosition d
   | d < 0 = Neg $ abs d
   | otherwise = Pos d
 
+
+toAbstractPoint :: Point -> AbsPoint
+toAbstractPoint (x,y) = (toPosition x, toPosition y)
 
 middle :: Moved -> Moved -> Moved
 middle Zero a = halve a

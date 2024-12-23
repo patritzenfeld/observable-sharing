@@ -40,33 +40,30 @@ instance MonadFail Identity where
 
 instance Drawable Graph where
 
-  blank = processSimple BlankNode
-
-  coordinatePlane = processSimple CoordinatePlaneNode
-
-  rectangle x = processSimple . RectangleNode x
-
-  solidRectangle x = processSimple . SolidRectangleNode x
-
-  thickRectangle t x = processSimple . ThickRectangleNode t x
-
-  circle = processSimple . CircleNode
-
-  solidCircle = processSimple. SolidCircleNode
-
-  thickCircle t = processSimple. ThickCircleNode t
-
-  lettering = processSimple . LetteringNode
+  blank                = processSimple BlankNode
+  coordinatePlane      = processSimple CoordinatePlaneNode
+  rectangle x          = processSimple . RectangleNode x
+  solidRectangle x     = processSimple . SolidRectangleNode x
+  thickRectangle t x   = processSimple . ThickRectangleNode t x
+  circle               = processSimple . CircleNode
+  solidCircle          = processSimple. SolidCircleNode
+  thickCircle t        = processSimple. ThickCircleNode t
+  arc a1 a2            = processSimple. ArcNode a1 a2
+  sector a1 a2         = processSimple. SectorNode a1 a2
+  thickArc t a1 a2     = processSimple. ThickArcNode t a1 a2
+  curve                = processSimple. CurveNode
+  thickCurve t         = processSimple. ThickCurveNode t
+  closedCurve          = processSimple. ClosedCurveNode
+  thickClosedCurve t   = processSimple. ThickClosedCurveNode t
+  solidClosedCurve     = processSimple. SolidClosedCurveNode
+  lettering            = processSimple . LetteringNode
+  styledLettering fs t = processSimple . StyledLetteringNode fs t
 
   translated x y = processOneGraph $ TranslateNode x y
-
-  colored c = processOneGraph $ ColorNode c
-
-  dilated d = processOneGraph $ DilateNode d
-
-  scaled x y = processOneGraph $ ScaleNode x y
-
-  rotated a = processOneGraph $ RotateNode a
+  colored c      = processOneGraph $ ColorNode c
+  dilated d      = processOneGraph $ DilateNode d
+  scaled x y     = processOneGraph $ ScaleNode x y
+  rotated a      = processOneGraph $ RotateNode a
 
   pictures ps = Graph sT sAST
     where

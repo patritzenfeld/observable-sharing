@@ -3,7 +3,7 @@ module API (Drawable(..)) where
 
 
 import Data.Text (Text)
-import Types (Color, Font, TextStyle)
+import Types (Color, Font, Point, TextStyle)
 
 
 
@@ -16,6 +16,11 @@ class Drawable a where
   arc :: Double -> Double -> Double -> a
   sector :: Double -> Double -> Double -> a
   thickArc :: Double -> Double -> Double -> Double -> a
+  curve :: [Point] -> a
+  thickCurve :: Double -> [Point] -> a
+  closedCurve :: [Point] -> a
+  thickClosedCurve :: Double -> [Point] -> a
+  solidClosedCurve :: [Point] -> a
   lettering :: Text -> a
   styledLettering :: TextStyle -> Font -> Text -> a
   thickCircle :: Double -> Double -> a
