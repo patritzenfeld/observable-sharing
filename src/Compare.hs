@@ -29,10 +29,10 @@ runShare a = do
 
 
 relabel :: [(Int,ReifyPicture Int)] -> BiMap Node -> ([(Int,ReifyPicture Int)],[(Int,ReifyPicture Int)])
-relabel rPics nodes = (reNumber reifiedPic, reNumber reifiedNodes)
+relabel reifyPic nodes = (reNumber reifiedPic, reNumber reifiedNodes)
   where
     reifiedNodes = map snd $ toReify nodes
-    reifiedPic = map snd rPics
+    reifiedPic = map snd reifyPic
     mapping = zip (nubOrd $ reifiedPic ++ reifiedNodes) [1..]
     reNumber = map $ (fromJust . flip lookup mapping) &&& id
 
