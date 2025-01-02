@@ -85,38 +85,44 @@ instance Drawable (PRec a) where
 instance MuRef (PRec a) where
   type DeRef (PRec a) = ReifyPicture
   mapDeRef f (PRec body) = case body of
-    Color c p             -> Color c <$> f p
-    Translate x y p       -> Translate x y <$> f p
-    Scale x y p           -> Scale x y <$> f p
-    Dilate x p            -> Dilate x <$> f p
-    Rotate a p            -> Rotate a <$> f p
-    Reflect a p           -> Reflect a <$> f p
-    Clip x y p            -> Clip x y <$> f p
-    And a b               -> And <$> f a <*> f b
-    Pictures ps           -> Pictures <$> traverse f ps
-    Rectangle x y         -> pure $ Rectangle x y
-    ThickRectangle t x y  -> pure $ ThickRectangle t x y
-    SolidRectangle x y    -> pure $ SolidRectangle x y
-    Circle r              -> pure $ Circle r
-    ThickCircle t r       -> pure $ ThickCircle t r
-    SolidCircle r         -> pure $ SolidCircle r
-    Lettering t           -> pure $ Lettering t
-    StyledLettering s w t -> pure $ StyledLettering s w t
-    Curve xs              -> pure $ Curve xs
-    ThickCurve t xs       -> pure $ ThickCurve t xs
-    ClosedCurve xs        -> pure $ ClosedCurve xs
-    SolidClosedCurve xs   -> pure $ SolidClosedCurve xs
-    ThickClosedCurve xs t -> pure $ ThickClosedCurve xs t
-    Polygon xs            -> pure $ Polygon xs
-    SolidPolygon xs       -> pure $ SolidPolygon xs
-    ThickPolygon xs t     -> pure $ ThickPolygon xs t
-    Polyline xs           -> pure $ Polyline xs
-    ThickPolyline xs t    -> pure $ ThickPolyline xs t
-    Sector a1 a2 r        -> pure $ Sector a1 a2 r
-    Arc a1 a2 r           -> pure $ Arc a1 a2 r
-    ThickArc t a1 a2 r    -> pure $ ThickArc t a1 a2 r
-    CoordinatePlane       -> pure CoordinatePlane
-    Blank                 -> pure Blank
+    Color c p       -> Color c <$> f p
+    Translate x y p -> Translate x y <$> f p
+    Scale x y p     -> Scale x y <$> f p
+    Dilate x p      -> Dilate x <$> f p
+    Rotate a p      -> Rotate a <$> f p
+    Reflect a p     -> Reflect a <$> f p
+    Clip x y p      -> Clip x y <$> f p
+    And a b         -> And <$> f a <*> f b
+    Pictures ps     -> Pictures <$> traverse f ps
+    _               -> pure $ changeBaseType body
+
+
+changeBaseType :: ReifyPicture a1 -> ReifyPicture a2
+changeBaseType p = case p of
+  Rectangle x y         -> Rectangle x y
+  ThickRectangle t x y  -> ThickRectangle t x y
+  SolidRectangle x y    -> SolidRectangle x y
+  Circle r              -> Circle r
+  ThickCircle t r       -> ThickCircle t r
+  SolidCircle r         -> SolidCircle r
+  Lettering t           -> Lettering t
+  StyledLettering s w t -> StyledLettering s w t
+  Curve xs              -> Curve xs
+  ThickCurve t xs       -> ThickCurve t xs
+  ClosedCurve xs        -> ClosedCurve xs
+  SolidClosedCurve xs   -> SolidClosedCurve xs
+  ThickClosedCurve xs t -> ThickClosedCurve xs t
+  Polygon xs            -> Polygon xs
+  SolidPolygon xs       -> SolidPolygon xs
+  ThickPolygon xs t     -> ThickPolygon xs t
+  Polyline xs           -> Polyline xs
+  ThickPolyline xs t    -> ThickPolyline xs t
+  Sector a1 a2 r        -> Sector a1 a2 r
+  Arc a1 a2 r           -> Arc a1 a2 r
+  ThickArc t a1 a2 r    -> ThickArc t a1 a2 r
+  CoordinatePlane       -> CoordinatePlane
+  Blank                 -> Blank
+  _                     -> error "This is a recursive Constructor. You're missing a pattern match!"
 
 
 share :: PRec a -> IO (IntMap (ReifyPicture Int), IntMap (ReifyPicture Int))
