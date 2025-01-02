@@ -16,8 +16,9 @@ dependencies:
   - base >= 4.11 && < 5
   - bytestring
   - bytestring-trie
-  - data-reify
   - containers
+  - data-reify
+  - extra
   - mtl
   - text
 
