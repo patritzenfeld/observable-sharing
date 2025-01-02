@@ -38,9 +38,9 @@ relabel reifyPic nodes = (reNumber reifiedPic, reNumber reifiedNodes)
 
 
 toReify :: BiMap Node -> [(IM.Key, ReifyPicture Int)]
-toReify = map $ second toRPic
+toReify = map $ second toReifyPic
   where
-    toRPic n = case n of
+    toReifyPic n = case n of
       RectangleNode x y -> Rectangle x y
       ThickRectangleNode t x y -> ThickRectangle t x y
       SolidRectangleNode x y -> SolidRectangle x y
