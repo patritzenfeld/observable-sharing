@@ -1,10 +1,12 @@
 {-# language RankNTypes #-}
+
 module Compare (module Compare) where
 
 
+import Data.Char                        (toLower)
 import Data.List.Extra                  ((\\), nubOrd)
 import Data.Maybe                       (fromJust)
-import Data.Tuple.Extra                 (second, (&&&))
+import Data.Tuple.Extra                 ((&&&), second)
 import qualified Data.IntMap            as IM
 
 import API                              (Drawable)
@@ -15,17 +17,50 @@ import Reify                            (ReifyPicture(..), share)
 
 runShare :: (forall a . Drawable a => a) -> IO ([(IM.Key, ReifyPicture Int)], [(IM.Key, ReifyPicture Int)])
 runShare a = do
-  (reify,_) <- share a
+  (reify,reifyTerm) <- share a
   let (hCons,_) = hashconsShare a
   let (explicitShares,allShares) = relabel (IM.toList reify) hCons
+  let allTerms = IM.toList reifyTerm
   if explicitShares == allShares
     then
       putStrLn "You shared everything, good job!"
     else do
       putStrLn "You did not share these subexpressions: "
-      print $ allShares \\ explicitShares
-
+      let notShared = allShares \\ explicitShares
+      putStrLn $ unlines $ map (flip printOriginal allTerms . snd) notShared
   pure (explicitShares,allShares)
+
+
+
+printOriginal :: (Show a, Eq a) => ReifyPicture a -> [(a, ReifyPicture a)] -> String
+printOriginal term subTerms = sub term
+  where
+    getExpr = fromJust . flip lookup subTerms
+    recursively n
+      | hasArguments expr = '(': printOriginal expr subTerms ++ ")"
+      | otherwise = printOriginal expr subTerms
+      where
+        expr = getExpr n
+
+    sub p = unwords $ case term of
+      Color c i       -> ["colored", show c, recursively i]
+      Translate x y i -> ["translated", show x, show y, recursively i]
+      Scale x y i     -> ["scaled", show x, show y, recursively i]
+      Dilate fac i    -> ["dilated", show fac, recursively i]
+      Rotate a i      -> ["rotated", show a, recursively i]
+      Reflect a i     -> ["reflected", show a, recursively i]
+      Clip x y i      -> ["clipped", show x, show y, recursively i]
+      Pictures is     -> ["pictures", concatMap recursively is]
+      And i1 i2       -> [recursively i1, "&", recursively i2]
+      _               -> case show p of
+        (x:xs) -> [toLower x:xs]
+        _      -> error "not possible"
+
+
+hasArguments :: ReifyPicture a -> Bool
+hasArguments Blank           = False
+hasArguments CoordinatePlane = False
+hasArguments _               = True
 
 
 relabel :: [(Int,ReifyPicture Int)] -> BiMap Node -> ([(Int,ReifyPicture Int)],[(Int,ReifyPicture Int)])
